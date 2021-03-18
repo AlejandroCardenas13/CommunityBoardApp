@@ -12,6 +12,15 @@ class CustomCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var snapshotData = snapshot.docs[index];
+    var docId = snapshot.docs[index].id;
+
+    TextEditingController nameInputController =
+        TextEditingController(text: snapshotData['name']);
+    TextEditingController titleInputController =
+        TextEditingController(text: snapshotData['title']);
+    TextEditingController descriptionInputController =
+        TextEditingController(text: snapshotData['description']);
+
     var timeToDate = new DateTime.fromMillisecondsSinceEpoch(
         snapshotData["timeStamp"].seconds * 1000);
     var dateFormatted = formatDate(timeToDate, [DD, '\\, ', M, ' ', yy]);
@@ -49,11 +58,107 @@ class CustomCard extends StatelessWidget {
                     children: [
                       IconButton(
                           icon: Icon(FontAwesomeIcons.edit, size: 15),
-                          onPressed: () {}),
+                          onPressed: () async {
+                            await showDialog(
+                                context: context,
+                                builder: (_) {
+                                  return AlertDialog(
+                                    elevation: 24.0,
+                                    contentPadding: EdgeInsets.all(10),
+                                    content: Column(
+                                      children: [
+                                        Text(
+                                            'Please fill out the form to update.'),
+                                        Container(
+                                            padding: EdgeInsets.only(
+                                                left: 10, right: 10),
+                                            child: TextField(
+                                              autocorrect: true,
+                                              autofocus: true,
+                                              decoration: InputDecoration(
+                                                  labelStyle: TextStyle(
+                                                      fontStyle:
+                                                          FontStyle.italic),
+                                                  labelText: 'Your Name*'),
+                                              controller: nameInputController,
+                                            )),
+                                        Container(
+                                            padding: EdgeInsets.only(
+                                                left: 10, right: 10),
+                                            child: TextField(
+                                              autocorrect: true,
+                                              autofocus: true,
+                                              decoration: InputDecoration(
+                                                  labelStyle: TextStyle(
+                                                      fontStyle:
+                                                          FontStyle.italic),
+                                                  labelText: 'Title*'),
+                                              controller: titleInputController,
+                                            )),
+                                        Container(
+                                            padding: EdgeInsets.only(
+                                                left: 10, right: 10),
+                                            child: TextField(
+                                              autocorrect: true,
+                                              autofocus: true,
+                                              decoration: InputDecoration(
+                                                  labelStyle: TextStyle(
+                                                      fontStyle:
+                                                          FontStyle.italic),
+                                                  labelText: 'Description*'),
+                                              controller:
+                                                  descriptionInputController,
+                                            )),
+                                      ],
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                          onPressed: () {
+                                            nameInputController.clear();
+                                            titleInputController.clear();
+                                            descriptionInputController.clear();
+                                            Navigator.pop(context);
+                                          },
+                                          child: Text('Cancel')),
+                                      TextButton(
+                                          onPressed: () {
+                                            if (nameInputController
+                                                    .text.isNotEmpty &&
+                                                titleInputController
+                                                    .text.isNotEmpty &&
+                                                descriptionInputController
+                                                    .text.isNotEmpty) {
+                                              FirebaseFirestore.instance
+                                                  .collection("board")
+                                                  .doc(docId)
+                                                  .update({
+                                                //Esto es como si enviara un json
+                                                "name":
+                                                    nameInputController.text,
+                                                "title":
+                                                    titleInputController.text,
+                                                "description":
+                                                    descriptionInputController
+                                                        .text,
+                                                "timeStamp": new DateTime.now()
+                                              }).then((response) {
+                                                Navigator.pop(context);
+                                              });
+                                            }
+                                          },
+                                          child: Text('Update'))
+                                    ],
+                                  );
+                                });
+                          }),
                       SizedBox(height: 19),
                       IconButton(
-                          icon: Icon(FontAwesomeIcons.trashAlt , size: 15),
-                          onPressed: () {})
+                          icon: Icon(FontAwesomeIcons.trashAlt, size: 15),
+                          onPressed: () async {
+                            var collectionReference =
+                                FirebaseFirestore.instance.collection("board");
+                            await collectionReference.doc(docId).delete();
+                          })
                     ],
                   ),
                 )
