@@ -1,3 +1,4 @@
+import 'package:community_board/ui/custom_card.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -48,7 +49,8 @@ class _BoardAppState extends State<BoardApp> {
           return ListView.builder(
               itemCount: snapshot.data.docs.length,
               itemBuilder: (context, int index) {
-                return Text(snapshot.data.docs[index]['description']);
+                //Text(snapshot.data.docs[index]['description']);
+                return CustomCard(snapshot: snapshot.data, index: index);
               });
         },
       ),
